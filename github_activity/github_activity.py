@@ -260,6 +260,8 @@ def generate_activity_md(
     if branch is not None:
         index_names = data[ (data["kind"] == "pr") & (data["baseRefName"] != branch)].index
         data.drop(index_names, inplace=True)
+        if data.empty:
+            return
 
     # Separate into closed and opened
     until_dt_str = data.until_dt_str
