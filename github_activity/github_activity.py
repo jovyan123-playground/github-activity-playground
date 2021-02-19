@@ -260,6 +260,8 @@ def generate_activity_md(
     if branch is not None:
         index_names = data[ (data["kind"] == "pr") & (data["baseRefName"] != branch)].index
         data.drop(index_names, inplace=True)
+        if data.empty:
+            return
 
     # Separate into closed and opened
     until_dt_str = data.until_dt_str
@@ -381,7 +383,7 @@ def generate_activity_md(
                 items["md"].append(this_md)
 
     # Get functional GitHub references: any git reference or master@{YY-mm-dd}
-    if not data.since_is_git_ref:
+    if closed_prs.size > 0 and not data.since_is_git_ref:
         since = f"master@{{{data.since_dt:%Y-%m-%d}}}"
         closest_date_start = closed_prs.loc[
             abs(
@@ -393,7 +395,7 @@ def generate_activity_md(
     else:
         since_ref = since
 
-    if not data.until_is_git_ref:
+    if closed_prs.size > 0 and not data.until_is_git_ref:
         until = f"master@{{{data.until_dt:%Y-%m-%d}}}"
         closest_date_stop = closed_prs.loc[
             abs(
