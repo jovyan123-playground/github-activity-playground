@@ -149,6 +149,7 @@ def generate_activity_md(
     include_opened=False,
     strip_brackets=False,
     heading_level=1,
+    branch=None
 ):
     """Generate a markdown changelog of GitHub activity within a date window.
 
@@ -191,6 +192,8 @@ def generate_activity_md(
         Base heading level to use.
         By default, top-level heading is h1, sections are h2.
         With heading_level=2 those are increased to h2 and h3, respectively.
+    branch : string | None
+        The branch or reference name to filter pull requests by
 
     Returns
     -------
@@ -252,6 +255,11 @@ def generate_activity_md(
         lambda a: [edge["node"]["name"] for edge in a["edges"]]
     )
     data["kind"] = data["url"].map(lambda a: "issue" if "issues/" in a else "pr")
+
+    # Filter the PRs by branch (or ref) if given
+    if branch is not None:
+        index_names = data[ (data["kind"] == "pr") & (data["baseRefName"] != branch)].index
+        data.drop(index_names, inplace=True)
 
     # Separate into closed and opened
     until_dt_str = data.until_dt_str
